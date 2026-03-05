@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="admin-auth">
+    <div class="auth-card">
+        <h2>Edit Game</h2>
+
+        <form method="POST">
+            <label>Game Name</label>
+            <input type="text" name="name" value="{{ game.name }}" required>
+
+            <label>Description</label>
+            <textarea name="description" required>{{ game.description }}</textarea>
+
+            <label>Price</label>
+            <input type="number" name="price" value="{{ game.price }}" required>
+
+            <label>Image Filename</label>
+            <input type="text" name="image" value="{{ game.image }}" required>
+
+            <label>
+                <input type="checkbox" name="available" {% if game.available %}checked{% endif %}>
+                Available
+            </label>
+
+            <button type="submit">Update Game</button>
+        </form>
+
+        <a href="{{ url_for('admin_dashboard') }}">← Back</a>
+    </div>
+</section>
+
+{% endblock %}

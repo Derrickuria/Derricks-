@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PlayPals | Unplug & Reconnect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">PlayPals</div>
+    <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('catalogue') }}">Games</a></li>
+        
+    </ul>
+</nav>
+
+{% block content %}{% endblock %}
+
+<!--Admin Access Button-->
+<a href="{{ url_for('admin_login') }}" class="admin-float-btn" title="Admin Access">⚙ Admin</a>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
+

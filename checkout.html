@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="checkout-section">
+    <h2 class="section-title">Delivery Details 🚚</h2>
+
+    <div class="checkout-container">
+
+        <form class="delivery-form" onsubmit="saveDeliveryDetails(event)">
+            <label>Full Name</label>
+            <input type="text" id="name" required placeholder="John Doe">
+
+            <label>Phone Number</label>
+            <input type="tel" id="phone" required placeholder="07XXXXXXXX">
+
+            <label>ID Number</label>
+            <input type="text" id="idNumber" required placeholder="National ID">
+
+            <label>Delivery Location</label>
+            <p class="map-instruction">
+                🔍 Search for your location OR click on the map to drop a pin where you want the games delivered.
+            </p>
+
+            <div id="map"></div>
+            <p id="location-status">No location selected yet</p>
+
+            <button type="submit" class="checkout-btn">Continue to Payment →</button>
+        </form>
+
+    </div>
+</section>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Leaflet Geocoder Plugin -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+let selectedLat = null;
+let selectedLng = null;
+let selectedAddress = "";
+let marker;
+
+// Initialize map
+const map = L.map('map').setView([-1.286389, 36.817223], 13);
+
+// Map tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// Search control
+L.Control.geocoder({
+    defaultMarkGeocode: false
+})
+.on('markgeocode', function(e) {
+    const center = e.geocode.center;
+    map.setView(center, 16);
+
+    if (marker) map.removeLayer(marker);
+    marker = L.marker(center).addTo(map);
+
+    selectedLat = center.lat;
+    selectedLng = center.lng;
+    selectedAddress = e.geocode.name || e.geocode.html || "";
+
+    updateLocationStatus();
+})
+.addTo(map);
+
+// Click-to-pin fallback
+map.on('click', function(e) {
+    selectedLat = e.latlng.lat;
+    selectedLng = e.latlng.lng;
+
+    if (marker) map.removeLayer(marker);
+    marker = L.marker([selectedLat, selectedLng]).addTo(map);
+
+    // Reverse geocode to get human-readable address
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${selectedLat}&lon=${selectedLng}`)
+        .then(res => res.json())
+        .then(data => {
+            selectedAddress = data.display_name || "";
+            updateLocationStatus();
+        })
+        .catch(err => {
+            selectedAddress = "";
+            updateLocationStatus();
+        });
+});
+
+// Update location text for user
+function updateLocationStatus() {
+    if (selectedAddress)
+        document.getElementById("location-status").innerText = "📍 Location Selected: " + selectedAddress;
+    else if (selectedLat && selectedLng)
+        document.getElementById("location-status").innerText =
+            "📍 Coordinates Selected: (" + selectedLat.toFixed(5) + ", " + selectedLng.toFixed(5) + ")";
+    else
+        document.getElementById("location-status").innerText = "No location selected yet";
+}
+
+// Save delivery details + address to localStorage
+function saveDeliveryDetails(event) {
+    event.preventDefault();
+
+    if (!selectedLat || !selectedLng || !selectedAddress) {
+        alert("Please search or click on the map to select a delivery location.");
+        return;
+    }
+
+    const deliveryDetails = {
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        idNumber: document.getElementById("idNumber").value,
+        latitude: selectedLat,
+        longitude: selectedLng,
+        address: selectedAddress
+    };
+
+    localStorage.setItem("deliveryDetails", JSON.stringify(deliveryDetails));
+
+    window.location.href = "/payment";
+}
+</script>
+{% endblock %}

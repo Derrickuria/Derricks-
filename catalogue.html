@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="games-catalogue">
+    <h2 class="section-title">Choose Your Game Night 🎲</h2>
+
+    <div class="games-grid">
+        {% for game in games %}
+        <div class="game-card">
+            <img src="{{ url_for('static', filename='images/' + game.image) }}" alt="{{ game.name }}">
+            <h3>{{ game.name }}</h3>
+            <p class="description">{{ game.description }}</p>
+            <p class="price">Ksh {{ game.price }} / day/night</p>
+
+            <div class="game-actions">
+                <button onclick="addToCart('{{ game.name }}', {{ game.price }})">Add to Cart</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- VIEW CART BUTTON -->
+<a href="{{ url_for('cart') }}" class="floating-cart-btn">
+    🛒 View Cart
+</a>
+
+<script>
+function addToCart(name, price) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart.push({ name: name, price: price });
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    const popup = document.createElement("div");
+    popup.className = "cart-popup";
+    popup.innerText = name + " added to cart 🛒";
+    document.body.appendChild(popup);
+
+    setTimeout(() => popup.remove(), 2000);
+}
+</script>
+{% endblock %}

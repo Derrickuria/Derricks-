@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="confirmation-section">
+    <div class="confirmation-container">
+        <h2 class="section-title">🎉 Order Confirmed!</h2>
+        <p class="success-msg">Thank you for your order! Your games are on their way.</p>
+
+        <div class="order-details">
+            <h3>Order Summary</h3>
+            <ul id="order-items"></ul>
+            <p class="total" id="order-total">Total: Ksh 0</p>
+
+            <h3>Delivery Details</h3>
+            <p id="delivery-info"></p>
+        </div>
+
+        <div class="confirmation-actions">
+            <button onclick="window.location.href='/'">Browse More Games</button>
+        </div>
+    </div>
+</section>
+
+<script>
+function loadConfirmation() {
+    const order = JSON.parse(localStorage.getItem("lastOrder"));
+    if (!order) return;
+
+    const itemsList = document.getElementById("order-items");
+    const totalDisplay = document.getElementById("order-total");
+    const deliveryInfo = document.getElementById("delivery-info");
+
+    let total = 0;
+    itemsList.innerHTML = "";
+
+    order.cart.forEach(item => {
+        let li = document.createElement("li");
+        li.textContent = item.name + " — Ksh " + item.price;
+        itemsList.appendChild(li);
+        total += item.price;
+    });
+
+    totalDisplay.textContent = "Total: Ksh " + total;
+
+    const delivery = order.delivery;
+    if (delivery) {
+        deliveryInfo.innerHTML = `
+            <strong>Name:</strong> ${delivery.name} <br>
+            <strong>Phone:</strong> ${delivery.phone} <br>
+            <strong>ID:</strong> ${delivery.idNumber} <br>
+            <strong>Location:</strong> ${delivery.address}
+        `;
+    }
+}
+
+window.onload = loadConfirmation;
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="payment-section">
+    <h2 class="section-title">Secure Payment 💳</h2>
+
+    <div class="payment-container">
+
+        <!-- ORDER SUMMARY -->
+        <div class="order-summary">
+            <h3>Order Summary</h3>
+            <ul id="order-items"></ul>
+            <p class="total" id="order-total">Total: Ksh 0</p>
+        </div>
+
+        <!-- DELIVERY SUMMARY -->
+        <div class="delivery-summary">
+            <h3>Delivery Details</h3>
+            <p id="delivery-info"></p>
+        </div>
+
+        <!-- PAYMENT FORM -->
+        <form class="payment-form" onsubmit="processPayment(event)">
+            <label>M-Pesa Phone Number</label>
+            <input type="tel" id="mpesa-phone" placeholder="07XXXXXXXX" required>
+            <button type="submit" class="pay-btn">Pay Now</button>
+        </form>
+
+        <p class="secure-note">🔒 Your payment is securely processed via M-Pesa</p>
+
+    </div>
+</section>
+
+<script>
+function loadOrderSummary() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let delivery = JSON.parse(localStorage.getItem("deliveryDetails")) || {};
+
+    const itemsList = document.getElementById("order-items");
+    const totalDisplay = document.getElementById("order-total");
+    const deliveryInfo = document.getElementById("delivery-info");
+
+    let total = 0;
+    itemsList.innerHTML = "";
+
+    cart.forEach(item => {
+        let li = document.createElement("li");
+        li.textContent = item.name + " — Ksh " + item.price;
+        itemsList.appendChild(li);
+        total += item.price;
+    });
+
+    totalDisplay.textContent = "Total: Ksh " + total;
+
+    if (delivery.name) {
+        deliveryInfo.innerHTML = `
+            <strong>Name:</strong> ${delivery.name} <br>
+            <strong>Phone:</strong> ${delivery.phone} <br>
+            <strong>ID:</strong> ${delivery.idNumber} <br>
+            <strong>Location:</strong> ${delivery.address}
+        `;
+    }
+
+    return { total, delivery, items: cart };
+}
+
+async function processPayment(event) {
+    event.preventDefault();
+
+    const phone = document.getElementById("mpesa-phone").value;
+    if (!phone.startsWith("07") || phone.length < 10) {
+        alert("Enter a valid M-Pesa phone number.");
+        return;
+    }
+
+    const { total, delivery, items } = loadOrderSummary();
+
+    try {
+        const response = await fetch("/save_order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: delivery.name,
+                phone: delivery.phone,
+                address: delivery.address,
+                total: total,
+                items: items
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            alert("Something went wrong saving your order: " + data.error);
+            return;
+        }
+
+        // Clear cart
+        localStorage.removeItem("cart");
+        localStorage.removeItem("deliveryDetails");
+
+        // Redirect to confirmation page
+        window.location.href = "/orderConfirmation/" + data.order_id;
+
+    } catch (error) {
+        alert("Something went wrong saving your order. Please try again.");
+        console.error(error);
+    }
+}
+
+window.onload = loadOrderSummary;
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="admin-auth">
+    <div class="auth-card">
+        <h2>Admin Registration</h2>
+
+        <form method="POST">
+            <label>Username</label>
+            <input type="text" name="username" required>
+
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <button type="submit">Register</button>
+        </form>
+
+        <p class="note">
+            Password must be at least 5 characters and include uppercase & lowercase letters.
+            <br>
+            <a href="{{ url_for('admin_login') }}">Already have an account? Login</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

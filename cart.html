@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cart-page">
+    <h2>Your Cart 🛒</h2>
+
+    <div id="cart-items"></div>
+
+    <h3 id="total-price"></h3>
+
+    <div class="cart-buttons">
+        <a href="{{ url_for('catalogue') }}">
+            <button class="browse-btn">← Continue Browsing</button>
+        </a>
+
+        <a href="{{ url_for('checkout') }}">
+            <button class="checkout-btn">Proceed to Checkout →</button>
+        </a>
+    </div>
+</section>
+
+<script>
+function loadCart() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let cartContainer = document.getElementById("cart-items");
+    let total = 0;
+
+    if (cart.length === 0) {
+        cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+        document.getElementById("total-price").innerText = "";
+        return;
+    }
+
+    cartContainer.innerHTML = "";
+
+    cart.forEach((item, index) => {
+        total += item.price;
+
+        cartContainer.innerHTML += `
+            <div class="cart-item">
+                <span>${item.name}</span>
+                <span>Ksh ${item.price}</span>
+                <button onclick="removeItem(${index})">Remove</button>
+            </div>
+        `;
+    });
+
+    document.getElementById("total-price").innerText = "Total: Ksh " + total;
+}
+
+function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+}
+
+window.onload = loadCart;
+</script>
+
+{% endblock %}
